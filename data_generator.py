@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime as dt
 import numpy as np
+from dateutil.relativedelta import relativedelta
 
 filepath = "./data_sample.csv"
 
@@ -8,7 +9,7 @@ def generate_dates():
     dates = []
     today = dt.date.today()
     for i in range(100):
-        random_day = today - dt.timedelta(np.random.randint(0, 365))
+        random_day = today - relativedelta(months=np.random.randint(0, 20))
         dates.append(random_day)
     return sorted(dates)
 

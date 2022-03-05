@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from data_handler import DataHandler
 
 """ 
 # My Portfolio
@@ -25,8 +26,15 @@ def inputs():
 def main():
     input_data, mode, edit = inputs()
     if input_data:
-        dataframe = pd.read_csv(input_data)
-        st.write(dataframe)
+        data = pd.read_csv(input_data)
+        data_handler = DataHandler(data)
+        if mode == "Raw data":
+            st.header("Raw numbers")
+            st.write(data)
+        elif mode == "Overall":
+            st.header("Global assets evolution")
+            df_overall = data_handler.get_overall_df()
+            st.area_chart(df_overall)
 
 if __name__ == '__main__':
     main()
