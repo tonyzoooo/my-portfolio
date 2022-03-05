@@ -1,11 +1,13 @@
+from turtle import color
 import pandas as pd
 import streamlit as st
 from data_handler import DataHandler
+import altair as alt
 
 """ 
 # My Portfolio
 
-Hello there! This is a project made to better track the evolution of my personal investements. 
+Hello there! This is a project made to better track the evolution of my personal investments. 
 I wanted to have a tool at hand to organize my spendings and I stumbled upon the streamlit 
 framework. It seemed to fulfill my needs so I gave it a try!
 
@@ -33,8 +35,14 @@ def main():
             st.write(data)
         elif mode == "Overall":
             st.header("Global assets evolution")
-            df_overall = data_handler.get_overall_df()
-            st.area_chart(df_overall)
+            products_df = data_handler.get_overall_df()
+            chart = alt.Chart(products_df).mark_area().encode(
+                x="date:T", y="value:Q", color="product:N", tooltip=["product:N", "value:Q", "date:T"]).interactive()
+            st.altair_chart(chart, use_container_width=True)
+            value = str(data_handler.current_total) + " € (from " + str(data_handler.first_total) + " €)"
+            delta = data_handler.delta_total
+            st.metric(label="All-time evolution:", value=value, delta=delta)
+
 
 if __name__ == '__main__':
     main()

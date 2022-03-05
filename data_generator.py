@@ -37,7 +37,7 @@ def generate_comments():
     return comments
 
 def main():
-    columns = ["Dates", "Companies", "Products", "Types", "Values", "Comments"]
+    columns = ["date", "company", "product", "type", "value", "comment"]
     dates = generate_dates()
     companies = generate_companies()
     products = generate_products()
