@@ -1,18 +1,14 @@
 import pandas as pd
 
-def get_sum(dataframe: pd.DataFrame) -> float:
-    return dataframe["Values"].sum()
-
-def get_mean(dataframe: pd.DataFrame) -> float:
-    return dataframe["Values"].mean()
-
 class DataHandler:
     def __init__(self, data: pd.DataFrame) -> None:
         self.data = data
-        self.dates = self.data["Dates"].unique()
-        self.groupby_overall = self.data.groupby(["Companies", "Products", "Types"])
-        #self.df_dates = self.data.groupby(self.data["Dates"])
-        #self.df_current = self.df_dates.last()
+        self.dates = self.data["date"].unique()
+        self.groupby_companies_products = self.data.groupby(["company", "product"])
+        self.index = self.generate_index()
+        self.current_total = self.get_data(-1)["value"].sum()
+        self.first_total = self.get_data(0)["value"].sum()
+        self.delta_total = self.get_evolution(self.first_total, self.current_total)
 
     def generate_index(self):
         start_date = self.dates[0]
@@ -21,25 +17,34 @@ class DataHandler:
         return index
 
     def get_overall_df(self):
-        groupby = self.groupby_overall
-        products = dict()
-        for key, item in groupby:
-            id = key[1] + " (" + key[0] + ")"
-            products[id] = []
-            group = groupby.get_group(key)
-            for _ in self.dates:
-                df = group[group["Dates"] == _]
+        groupby = self.groupby_companies_products
+        data = {"date": [], "value": [], "product" : []}
+        for _ in self.dates:
+            for key, item in groupby:
+                data["date"].append(_)
+                id = key[1] + " (" + key[0] + ")"
+                group = groupby.get_group(key)
+                data["product"].append(id) 
+                df = group[group["date"] == _]
                 if len(df) == 0:
-                    products[id].append(0)
+                    data["value"].append(0)
                 else:
-                    products[id].append(df["Values"].values[0])        
-        return pd.DataFrame(products, index=self.generate_index())
+                    data["value"].append(df["value"].sum())
+        return pd.DataFrame(data)
+        
+
+    def get_data(self, index):
+        date = self.dates[index]
+        return self.data[self.data["date"] == date]
+
+    @staticmethod 
+    def get_evolution(start_value, end_value):
+        return "{:.2f}".format((end_value - start_value) / start_value * 100) + " %"
+
 
 def main():
     data = pd.read_csv("./data_sample.csv")
     data_handler = DataHandler(data)
-    for key, item in data_handler.groupby_overall:
-        group = data_handler.groupby_overall.get_group(key)
     df = data_handler.get_overall_df()
     print(df)
     
